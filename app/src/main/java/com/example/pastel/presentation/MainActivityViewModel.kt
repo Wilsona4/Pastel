@@ -9,8 +9,6 @@ import com.example.pastel.data.remote.model.Article
 import com.example.pastel.domain.repository.NewsRepository
 import com.example.pastel.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,7 +16,7 @@ import javax.inject.Inject
 data class NewsUiState(
     val articles: List<Article> = emptyList(),
     val loading: Boolean = false,
-    val error: String? = null
+    val error: String = ""
 )
 
 @HiltViewModel
@@ -29,9 +27,6 @@ class MainActivityViewModel @Inject constructor(
     // UI state exposed to the UI
     var uiState by mutableStateOf(NewsUiState(loading = true))
         private set
-
-    private val _uiEvent = Channel<String>()
-    val uiEvent = _uiEvent.receiveAsFlow()
 
     init {
         getNewsArticles()
@@ -54,10 +49,8 @@ class MainActivityViewModel @Inject constructor(
                         uiState = uiState.copy(
                             loading = false,
                             articles = result.data ?: emptyList(),
+                            error = result.message ?: "Something went wrong"
                         )
-
-                        _uiEvent.send(result.message ?: "Something went wrong")
-
                     }
                     is Resource.Loading -> {
                         uiState = uiState.copy(loading = true)

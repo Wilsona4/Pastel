@@ -5,10 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -36,46 +36,69 @@ fun NewsListScreen(
     navigator: DestinationsNavigator,
     mainActivityViewModel: MainActivityViewModel = hiltViewModel(),
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
+    val state = mainActivityViewModel.uiState
+    Scaffold(
+        topBar = {
+            AppBar(title = "NewsFeed")
+        }
     ) {
-        AppBar(title = "NewsFeed")
-        Text(
-            text = stringResource(R.string.top_news),
-            style = TextStyle(
-                color = Cream,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold
-            ),
-            textAlign = TextAlign.Center,
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Grey)
-                .padding(vertical = 4.dp)
-        )
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
+                .fillMaxSize()
         ) {
-            items(mainActivityViewModel.uiState.articles) { article ->
-                NewsItem(
-                    article = article,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            navigator.navigate(
-                                NewsDetailScreenDestination(article.url)
+            Text(
+                text = stringResource(R.string.top_news),
+                style = TextStyle(
+                    color = Cream,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Grey)
+                    .padding(vertical = 4.dp)
+            )
+            Box(modifier = Modifier.fillMaxSize()){
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(state.articles) { article ->
+                        NewsItem(
+                            article = article,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    navigator.navigate(
+                                        NewsDetailScreenDestination(article.url)
+                                    )
+                                }
+                        )
+                        Divider(
+                            modifier = Modifier.padding(
+                                horizontal = 16.dp
                             )
-                        }
-                )
-                Divider(
-                    modifier = Modifier.padding(
-                        horizontal = 16.dp
+                        )
+                    }
+                }
+                if (state.error.isNotBlank()) {
+                    Text(
+                        text = state.error,
+                        color = MaterialTheme.colors.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .align(Alignment.Center)
                     )
-                )
+                }
+                if (state.loading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
             }
         }
     }
+
 }
 
 @Composable
